@@ -1,4 +1,5 @@
 package com.example.dgis_flutter
 
-class GisMapController {
+open class GisMapController(id: String) {
+    val id: String = id;
 }
