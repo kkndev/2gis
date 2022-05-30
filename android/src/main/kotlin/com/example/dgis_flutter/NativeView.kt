@@ -1,17 +1,23 @@
 package com.example.dgis_flutter
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
-import ru.dgis.sdk.*
+import ru.dgis.sdk.ApiKeys
+import ru.dgis.sdk.DGis
+import ru.dgis.sdk.Duration
 import ru.dgis.sdk.coordinates.Bearing
 import ru.dgis.sdk.coordinates.GeoPoint
 import ru.dgis.sdk.coordinates.Latitude
 import ru.dgis.sdk.coordinates.Longitude
+import ru.dgis.sdk.geometry.GeoPointWithElevation
 import ru.dgis.sdk.map.*
+import java.io.ByteArrayInputStream
 
 internal class NativeView(
     context: Context,
@@ -21,6 +27,7 @@ internal class NativeView(
 ) :
     PlatformView, MethodChannel.MethodCallHandler {
     private var methodChannel: MethodChannel;
+    private lateinit var mapObjectManager: MapObjectManager;
     private var sdkContext: ru.dgis.sdk.Context = DGis.initialize(
         context,
         ApiKeys(
@@ -49,19 +56,34 @@ internal class NativeView(
             tilt = Tilt((creationParams["tilt"] as Double).toFloat()),
             bearing = Bearing((creationParams["bearing"] as Double))
         )
-        methodChannel = MethodChannel(messenger, "fgis");
-        methodChannel.setMethodCallHandler(this);
-        gisView = MapView(context, mapOptions);
-
-    }
-
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        if (call.method == "getCameraPosition") {
-            getCameraPosition(result = result)
-        } else if (call.method == "setCameraPosition") {
-            setCameraPosition(call = call)
+        methodChannel = MethodChannel(messenger, "fgis")
+        methodChannel.setMethodCallHandler(this)
+        gisView = MapView(context, mapOptions)
+        gisView.getMapAsync {map ->
+            mapObjectManager = MapObjectManager(map)
+            createMarkers(creationParams)
         }
     }
+
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+            "getCameraPosition" -> {
+                getCameraPosition(result = result)
+            }
+            "setCameraPosition" -> {
+                setCameraPosition(call = call)
+            }
+            "createMarkers" -> {
+                val args = call.arguments
+                createMarkers(args)
+            }
+            "removeMarkers" -> {
+                removeAllMarkers()
+            }
+        }
+    }
+
 
     private fun setCameraPosition(call: MethodCall) {
         val args: Map<String, Any?> = call.arguments as Map<String, Any?>
@@ -99,6 +121,35 @@ internal class NativeView(
             )
             result.success(data);
         }
+    }
+
+    private  fun createMarkers(arguments : Any){
+        val args = arguments as Map<String, Any>;
+        val markers = args["markers"] as List<Map<String, Any>>
+        val objects : MutableList<SimpleMapObject> = ArrayList() ;
+        for(i in markers){
+            val arrayInputStream = ByteArrayInputStream(i["icon"] as ByteArray?)
+            val bitmap = BitmapFactory.decodeStream(arrayInputStream)
+            val icon = imageFromBitmap(sdkContext, bitmap)
+            val marker = Marker(
+                MarkerOptions(
+                    position = GeoPointWithElevation(
+                        latitude = i["latitude"] as Double,
+                        longitude = i["longitude"] as Double
+                    ),
+                    icon = icon
+                )
+            )
+            objects.add(marker)
+        }
+
+
+        mapObjectManager.addObjects(objects.toList());
+
+    }
+
+    private  fun removeAllMarkers(){
+
     }
 
 

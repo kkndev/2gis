@@ -1,5 +1,6 @@
 import 'package:dgis_flutter/gis_map_controller.dart';
 import 'package:dgis_flutter/model/gis_camera_position.dart';
+import 'package:dgis_flutter/model/gis_map_object.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,11 +12,14 @@ class GisMap extends StatelessWidget {
   final String mapKey;
   final GisCameraPosition startCameraPosition;
   final GisMapController controller;
+  final List<GisMapMarker> markers;
+
   const GisMap(
       {Key? key,
       required this.mapKey,
       required this.directoryKey,
       required this.startCameraPosition,
+      required this.markers,
       required this.controller})
       : super(key: key);
 
@@ -31,7 +35,8 @@ class GisMap extends StatelessWidget {
       'longitude': startCameraPosition.longitude,
       'zoom': startCameraPosition.zoom,
       'tilt': startCameraPosition.tilt,
-      'bearing': startCameraPosition.bearing
+      'bearing': startCameraPosition.bearing,
+      'markers' : markers.map((e) => e.toJson()).toList()
     };
 
     return PlatformViewLink(

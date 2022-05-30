@@ -7,7 +7,7 @@ import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 
 class NativeViewFactory(messenger : BinaryMessenger) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    val mess = messenger
+    private val mess = messenger
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String, Any?>?
         return NativeView(context, viewId, creationParams, mess)
