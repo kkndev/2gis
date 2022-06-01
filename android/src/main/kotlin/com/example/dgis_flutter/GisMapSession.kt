@@ -1,4 +1,17 @@
 package com.example.dgis_flutter
 
-class GisMapSession {
+import ru.dgis.sdk.map.MapView
+
+object GisMapSession {
+    private var  mapView : MapView? = null;
+
+    @JvmStatic
+    fun setMapView(view: MapView){
+        mapView = view
+    }
+
+    @JvmStatic
+    fun getMapView(): MapView? {
+        return mapView;
+    }
 }

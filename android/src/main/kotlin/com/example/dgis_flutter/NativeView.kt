@@ -2,7 +2,6 @@ package com.example.dgis_flutter
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.view.View
 import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -38,7 +37,7 @@ internal class NativeView(
     private var gisView: MapView
 
     override fun getView(): MapView {
-        return gisView
+        return GisMapSession.getMapView() ?: gisView
     }
 
 
@@ -58,7 +57,8 @@ internal class NativeView(
         )
         methodChannel = MethodChannel(messenger, "fgis")
         methodChannel.setMethodCallHandler(this)
-        gisView = MapView(context, mapOptions)
+        gisView = GisMapSession.getMapView() ?: MapView(context, mapOptions)
+        GisMapSession.setMapView(gisView)
         gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
             createMarkers(creationParams)
@@ -177,10 +177,4 @@ internal class NativeView(
     }
 
 
-}
-
-class TouchObserver : TouchEventsObserver {
-    override fun onTap(point: ScreenPoint) {
-        super.onTap(point)
-    }
 }
