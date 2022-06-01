@@ -1,8 +1,8 @@
 package com.example.dgis_flutter
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.view.View
 import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -59,9 +59,32 @@ internal class NativeView(
         methodChannel = MethodChannel(messenger, "fgis")
         methodChannel.setMethodCallHandler(this)
         gisView = MapView(context, mapOptions)
-        gisView.getMapAsync {map ->
+        gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
             createMarkers(creationParams)
+            gisView.setTouchEventsObserver(object : TouchEventsObserver {
+                override fun onTap(point: ScreenPoint) {
+                    map.getRenderedObjects(point, ScreenDistance(1f))
+                        .onResult { renderedObjectInfos ->
+                            for (renderedObjectInfo in renderedObjectInfos) {
+                                if (renderedObjectInfo.item.item.userData != null) {
+                                    val args = mapOf(
+                                        "id" to renderedObjectInfo.item.item.userData
+                                    )
+                                    Log.d(
+                                        "DGIS",
+                                        "Нажатие на маркер"
+                                    )
+                                    methodChannel.invokeMethod(
+                                        "ontap_marker",
+                                        args
+                                    )
+                                }
+                            }
+                        }
+                    super.onTap(point)
+                }
+            })
         }
     }
 
@@ -123,11 +146,11 @@ internal class NativeView(
         }
     }
 
-    private  fun createMarkers(arguments : Any){
+    private fun createMarkers(arguments: Any) {
         val args = arguments as Map<String, Any>;
         val markers = args["markers"] as List<Map<String, Any>>
-        val objects : MutableList<SimpleMapObject> = ArrayList() ;
-        for(i in markers){
+        val objects: MutableList<SimpleMapObject> = ArrayList();
+        for (i in markers) {
             val arrayInputStream = ByteArrayInputStream(i["icon"] as ByteArray?)
             val bitmap = BitmapFactory.decodeStream(arrayInputStream)
             val icon = imageFromBitmap(sdkContext, bitmap)
@@ -137,7 +160,8 @@ internal class NativeView(
                         latitude = i["latitude"] as Double,
                         longitude = i["longitude"] as Double
                     ),
-                    icon = icon
+                    icon = icon,
+                    userData = i["id"],
                 )
             )
             objects.add(marker)
@@ -148,9 +172,15 @@ internal class NativeView(
 
     }
 
-    private  fun removeAllMarkers(){
+    private fun removeAllMarkers() {
 
     }
 
 
+}
+
+class TouchObserver : TouchEventsObserver {
+    override fun onTap(point: ScreenPoint) {
+        super.onTap(point)
+    }
 }

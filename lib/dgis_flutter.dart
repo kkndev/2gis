@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
-class GisMap extends StatelessWidget {
+class GisMap extends StatefulWidget {
   final String directoryKey;
   final String mapKey;
   final GisCameraPosition startCameraPosition;
   final GisMapController controller;
   final List<GisMapMarker> markers;
+  final Function(GisMapMarker) onTapMarker;
 
   const GisMap(
       {Key? key,
@@ -20,8 +21,35 @@ class GisMap extends StatelessWidget {
       required this.directoryKey,
       required this.startCameraPosition,
       required this.markers,
-      required this.controller})
+      required this.controller,
+      required this.onTapMarker})
       : super(key: key);
+
+  @override
+  State<GisMap> createState() => _GisMapState();
+}
+
+class _GisMapState extends State<GisMap> {
+  final _methodCannel = const MethodChannel("fgis");
+
+  @override
+  initState() {
+    _methodCannel
+        .setMethodCallHandler((MethodCall call) => _handleMethodCall(call));
+    super.initState();
+  }
+
+  Future<dynamic> _handleMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case 'ontap_marker':
+        String id = call.arguments['id'];
+        widget.onTapMarker(widget.markers.firstWhere((element) =>
+            element.id == id));
+        break;
+      default:
+        throw MissingPluginException();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +57,14 @@ class GisMap extends StatelessWidget {
     const String viewType = '<gis-view>';
     // Pass parameters to the platform side.
     Map<String, dynamic> creationParams = {
-      'directory': directoryKey,
-      'map': mapKey,
-      'latitude': startCameraPosition.latitude,
-      'longitude': startCameraPosition.longitude,
-      'zoom': startCameraPosition.zoom,
-      'tilt': startCameraPosition.tilt,
-      'bearing': startCameraPosition.bearing,
-      'markers' : markers.map((e) => e.toJson()).toList()
+      'directory': widget.directoryKey,
+      'map': widget.mapKey,
+      'latitude': widget.startCameraPosition.latitude,
+      'longitude': widget.startCameraPosition.longitude,
+      'zoom': widget.startCameraPosition.zoom,
+      'tilt': widget.startCameraPosition.tilt,
+      'bearing': widget.startCameraPosition.bearing,
+      'markers': widget.markers.map((e) => e.toJson()).toList()
     };
 
     return PlatformViewLink(

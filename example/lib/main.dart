@@ -20,12 +20,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -49,19 +47,23 @@ class _GisScreenState extends State<GisScreen> {
 
   @override
   void initState() {
-    icons = Future.wait([
-      getPngFromAsset(context, AssetPath.iconsPointGrey, 60)
-    ]).then((value) => [
-    GisMapMarker(icon: value[0], latitude: 52.29778, longitude: 104.29639)
-    ]);
+    icons =
+        Future.wait([getPngFromAsset(context, AssetPath.iconsPointGrey, 60)])
+            .then((value) => [
+                  GisMapMarker(
+                      icon: value[0],
+                      latitude: 52.29778,
+                      longitude: 104.29639,
+                      id: "123456")
+                ]);
     super.initState();
   }
 
   Future<Uint8List> getPngFromAsset(
-      BuildContext context,
-      String path,
-      int width,
-      ) async {
+    BuildContext context,
+    String path,
+    int width,
+  ) async {
     ByteData data = await DefaultAssetBundle.of(context).load(path);
     Codec codec = await instantiateImageCodec(
       data.buffer.asUint8List(),
@@ -76,31 +78,36 @@ class _GisScreenState extends State<GisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () async {
-            await controller.increaseZoom(duration: 0);
-          },
-        ),
-        body: Center(
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () async {
+          await controller.increaseZoom(duration: 0);
+        },
+      ),
+      body: Center(
           child: FutureBuilder<List<GisMapMarker>>(
-            future: icons,
-            builder: (context, snapshot){
-              if(!snapshot.hasData) return const SizedBox();
-              return  GisMap(
-                directoryKey: 'you directory key',
-                mapKey: 'you map key',
-                controller: controller,
-                markers: snapshot.data!,
-                startCameraPosition: const GisCameraPosition(
-                  latitude: 52.29778,
-                  longitude: 104.29639,
-                  bearing: 85.0,
-                  tilt: 25.0,
-                  zoom: 14.0,
-                ),
-              );
+        future: icons,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const SizedBox();
+          return GisMap(
+            directoryKey: 'you directory key',
+            mapKey: 'you map key',
+            controller: controller,
+            markers: snapshot.data!,
+            onTapMarker: (marker) {
+              // ignore: avoid_print
+              print(marker.id);
             },
-          )),);
+            startCameraPosition: const GisCameraPosition(
+              latitude: 52.29778,
+              longitude: 104.29639,
+              bearing: 85.0,
+              tilt: 25.0,
+              zoom: 14.0,
+            ),
+          );
+        },
+      )),
+    );
   }
 }
