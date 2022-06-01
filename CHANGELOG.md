@@ -1,3 +1,3 @@
-## 0.0.4
+## 0.0.7
 
-Added onTapMarker
+update flutter to 3.0.1
