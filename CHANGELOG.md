@@ -1,3 +1,3 @@
-## 0.0.2
+## 0.0.4
 
-Added a controller to control the position of the camera on the map.
+Added onTapMarker
