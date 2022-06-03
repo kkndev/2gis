@@ -90,8 +90,8 @@ class _GisScreenState extends State<GisScreen> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const SizedBox();
           return GisMap(
-            directoryKey: 'directory key',
-            mapKey: 'map key',
+            directoryKey: '',
+            mapKey: '',
             controller: controller,
             markers: snapshot.data!,
             onTapMarker: (marker) {

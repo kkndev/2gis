@@ -79,4 +79,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'ru.dgis.sdk:sdk-map:2.7.0'
+    implementation "com.google.android.gms:play-services-location:17.1.0"
 }

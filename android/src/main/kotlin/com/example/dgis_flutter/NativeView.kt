@@ -1,5 +1,6 @@
 package com.example.dgis_flutter
 
+import android.Manifest
 import android.content.Context
 import android.graphics.BitmapFactory
 import io.flutter.Log
@@ -16,7 +17,11 @@ import ru.dgis.sdk.coordinates.Latitude
 import ru.dgis.sdk.coordinates.Longitude
 import ru.dgis.sdk.geometry.GeoPointWithElevation
 import ru.dgis.sdk.map.*
+import ru.dgis.sdk.positioning.registerPlatformMagneticSource
 import java.io.ByteArrayInputStream
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import ru.dgis.sdk.positioning.registerPlatformLocationSource
 
 internal class NativeView(
     context: Context,
@@ -27,6 +32,10 @@ internal class NativeView(
     PlatformView, MethodChannel.MethodCallHandler {
     private var methodChannel: MethodChannel;
     private lateinit var mapObjectManager: MapObjectManager;
+    private var gisView: MapView
+    private lateinit var controller : GisMapController
+
+
     private var sdkContext: ru.dgis.sdk.Context = DGis.initialize(
         context,
         ApiKeys(
@@ -34,16 +43,20 @@ internal class NativeView(
             map = creationParams["map"] as String
         ),
     )
-    private var gisView: MapView
+
 
     override fun getView(): MapView {
         return GisMapSession.getMapView() ?: gisView
     }
 
-
     override fun dispose() {}
 
     init {
+        // Запрос разрешений, и регистрация сервисов локации
+        registerServices(context)
+        setupPermissions(context)
+
+        // Инициализация камеры.
         val mapOptions = MapOptions()
         val startPoint = GeoPoint(
             latitude = Latitude(creationParams?.get("latitude") as Double),
@@ -55,13 +68,18 @@ internal class NativeView(
             tilt = Tilt((creationParams["tilt"] as Double).toFloat()),
             bearing = Bearing((creationParams["bearing"] as Double))
         )
+
+        // Создаем канал для общения..
         methodChannel = MethodChannel(messenger, "fgis")
         methodChannel.setMethodCallHandler(this)
+
+
         gisView = GisMapSession.getMapView() ?: MapView(context, mapOptions)
         GisMapSession.setMapView(gisView)
         gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
-            createMarkers(creationParams)
+            controller = GisMapController(gisView, sdkContext, mapObjectManager)
+            controller.createMarkers(creationParams)
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
                     map.getRenderedObjects(point, ScreenDistance(1f))
@@ -85,6 +103,12 @@ internal class NativeView(
                     super.onTap(point)
                 }
             })
+            val source = MyLocationMapObjectSource(
+                sdkContext,
+                MyLocationDirectionBehaviour.FOLLOW_MAGNETIC_HEADING,
+                createSmoothMyLocationController()
+            )
+            map.addSource(source)
         }
     }
 
@@ -92,89 +116,35 @@ internal class NativeView(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "getCameraPosition" -> {
-                getCameraPosition(result = result)
+                controller.getCameraPosition(result = result)
             }
             "setCameraPosition" -> {
-                setCameraPosition(call = call)
+                controller.setCameraPosition(call = call)
             }
             "createMarkers" -> {
                 val args = call.arguments
-                createMarkers(args)
-            }
-            "removeMarkers" -> {
-                removeAllMarkers()
+                controller.createMarkers(args)
             }
         }
     }
 
+    private fun registerServices(applicationContext : Context) {
+        val compassSource = CustomCompassManager(applicationContext)
+        registerPlatformMagneticSource(sdkContext, compassSource)
 
-    private fun setCameraPosition(call: MethodCall) {
-        val args: Map<String, Any?> = call.arguments as Map<String, Any?>
-        val cameraPosition = CameraPosition(
-            GeoPoint(
-                latitude = Latitude(value = args["latitude"] as Double),
-                longitude = Longitude(value = args["longitude"] as Double)
-            ),
-            zoom = Zoom(value = (args["zoom"] as Double).toFloat()),
-            bearing = Bearing(value = args["bearing"] as Double),
-            tilt = Tilt(value = (args["tilt"] as Double).toFloat())
-        )
-        gisView.getMapAsync { map ->
-            map.camera.move(
-                cameraPosition,
-                Duration.ofSeconds((args["duration"] as Int).toLong()),
-                CameraAnimationType.LINEAR
-            )
-                .onResult {
-                    Log.d("APP", "Перелёт камеры завершён.")
-                }
-        }
+        val locationSource = CustomLocationManager(applicationContext)
+        registerPlatformLocationSource(sdkContext, locationSource)
     }
 
-    private fun getCameraPosition(result: MethodChannel.Result) {
-        lateinit var cameraPosition: CameraPosition;
-        gisView.getMapAsync { map ->
-            cameraPosition = map.camera.position;
-            val data = mapOf(
-                "latitude" to cameraPosition.point.latitude.value,
-                "longitude" to cameraPosition.point.longitude.value,
-                "bearing" to cameraPosition.bearing.value,
-                "tilt" to cameraPosition.tilt.value,
-                "zoom" to cameraPosition.zoom.value,
-            )
-            result.success(data);
-        }
+    private fun setupPermissions(context: Context) {
+        val permission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
-
-    private fun createMarkers(arguments: Any) {
-        val args = arguments as Map<String, Any>;
-        val markers = args["markers"] as List<Map<String, Any>>
-        val objects: MutableList<SimpleMapObject> = ArrayList();
-        for (i in markers) {
-            val arrayInputStream = ByteArrayInputStream(i["icon"] as ByteArray?)
-            val bitmap = BitmapFactory.decodeStream(arrayInputStream)
-            val icon = imageFromBitmap(sdkContext, bitmap)
-            val marker = Marker(
-                MarkerOptions(
-                    position = GeoPointWithElevation(
-                        latitude = i["latitude"] as Double,
-                        longitude = i["longitude"] as Double
-                    ),
-                    icon = icon,
-                    userData = i["id"],
-                )
-            )
-            objects.add(marker)
-        }
-
-
-        mapObjectManager.addObjects(objects.toList());
-
-    }
-
-    private fun removeAllMarkers() {
-
-    }
-
 
 }
