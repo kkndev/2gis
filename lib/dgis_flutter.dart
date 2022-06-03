@@ -12,7 +12,6 @@ class GisMap extends StatefulWidget {
   final String mapKey;
   final GisCameraPosition startCameraPosition;
   final GisMapController controller;
-  final List<GisMapMarker> markers;
   final Function(GisMapMarker) onTapMarker;
 
   const GisMap(
@@ -20,7 +19,6 @@ class GisMap extends StatefulWidget {
       required this.mapKey,
       required this.directoryKey,
       required this.startCameraPosition,
-      required this.markers,
       required this.controller,
       required this.onTapMarker})
       : super(key: key);
@@ -43,7 +41,8 @@ class _GisMapState extends State<GisMap> {
     switch (call.method) {
       case 'ontap_marker':
         String id = call.arguments['id'];
-        widget.onTapMarker(widget.markers.firstWhere((element) =>
+        final list = widget.controller.listMarker;
+        widget.onTapMarker(list.firstWhere((element) =>
             element.id == id));
         break;
       default:
@@ -64,7 +63,6 @@ class _GisMapState extends State<GisMap> {
       'zoom': widget.startCameraPosition.zoom,
       'tilt': widget.startCameraPosition.tilt,
       'bearing': widget.startCameraPosition.bearing,
-      'markers': widget.markers.map((e) => e.toJson()).toList()
     };
 
     return PlatformViewLink(
