@@ -1,4 +1,4 @@
 package com.example.dgis_flutter
 
-class GisMapController {
+class CustomCompasManager {
 }
