@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:dgis_flutter/model/gis_camera_position.dart';
-import 'package:dgis_flutter/model/gis_map_object.dart';
 import 'package:flutter/services.dart';
 
 class GisMapController {
   GisMapController();
-  List<GisMapMarker> listMarker = [];
+
   final _platform = const MethodChannel('fgis');
 
   GisCameraPosition? position;
@@ -57,26 +54,12 @@ class GisMapController {
       await _platform.invokeMethod(
           'setCameraPosition',
           position
-              .copyWith(
-                  zoom: position.zoom < (size ?? 1)
-                      ? 0
-                      : position.zoom - (size ?? 1))
+              .copyWith(zoom: position.zoom < (size ?? 1) ? 0 : position.zoom - (size ?? 1))
               .toNativeMap()
             ..addAll({'duration': duration ?? 2}));
     } on PlatformException catch (e) {
       // ignore: avoid_print
       print('Platform exeption setCameraPosition() message: $e');
-    }
-  }
-
-  Future<void> updateMarkers(List<GisMapMarker> markers) async {
-    try {
-      listMarker = markers;
-      await _platform.invokeMethod('updateMarkers',
-          {"markers": markers.map((e) => e.toJson()).toList()});
-    } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print('Platform exeption updateMarkers() message: $e');
     }
   }
 }

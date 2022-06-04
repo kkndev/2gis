@@ -44,7 +44,6 @@ class _GisScreenState extends State<GisScreen> {
   final GisMapController controller = GisMapController();
 
   late final Future<List<GisMapMarker>> icons;
-  List<GisMapMarker> list = [];
 
   @override
   void initState() {
@@ -82,8 +81,7 @@ class _GisScreenState extends State<GisScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          // await controller.increaseZoom(duration: 0);
-          await controller.updateMarkers(list);
+          await controller.increaseZoom(duration: 0);
         },
       ),
       body: Center(
@@ -91,11 +89,11 @@ class _GisScreenState extends State<GisScreen> {
         future: icons,
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const SizedBox();
-          list = snapshot.data!;
           return GisMap(
             directoryKey: '',
             mapKey: '',
             controller: controller,
+            markers: snapshot.data!,
             onTapMarker: (marker) {
               // ignore: avoid_print
               print(marker.id);
