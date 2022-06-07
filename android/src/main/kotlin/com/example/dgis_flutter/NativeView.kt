@@ -2,7 +2,6 @@ package com.example.dgis_flutter
 
 import android.Manifest
 import android.content.Context
-import android.graphics.BitmapFactory
 import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -10,15 +9,12 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import ru.dgis.sdk.ApiKeys
 import ru.dgis.sdk.DGis
-import ru.dgis.sdk.Duration
 import ru.dgis.sdk.coordinates.Bearing
 import ru.dgis.sdk.coordinates.GeoPoint
 import ru.dgis.sdk.coordinates.Latitude
 import ru.dgis.sdk.coordinates.Longitude
-import ru.dgis.sdk.geometry.GeoPointWithElevation
 import ru.dgis.sdk.map.*
 import ru.dgis.sdk.positioning.registerPlatformMagneticSource
-import java.io.ByteArrayInputStream
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import ru.dgis.sdk.positioning.registerPlatformLocationSource
@@ -79,7 +75,6 @@ internal class NativeView(
         gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
             controller = GisMapController(gisView, sdkContext, mapObjectManager)
-            controller.createMarkers(creationParams)
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
                     map.getRenderedObjects(point, ScreenDistance(1f))
@@ -121,9 +116,9 @@ internal class NativeView(
             "setCameraPosition" -> {
                 controller.setCameraPosition(call = call)
             }
-            "createMarkers" -> {
+            "updateMarkers" -> {
                 val args = call.arguments
-                controller.createMarkers(args)
+                controller.updateMarkers(arguments = args)
             }
         }
     }

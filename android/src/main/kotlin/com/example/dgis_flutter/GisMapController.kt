@@ -58,7 +58,7 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
         }
     }
 
-    fun createMarkers(arguments: Any) {
+    fun updateMarkers(arguments: Any) {
         val args = arguments as Map<String, Any>;
         val markers = args["markers"] as List<Map<String, Any>>
         val objects: MutableList<SimpleMapObject> = ArrayList();
@@ -78,7 +78,7 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
             )
             objects.add(marker)
         }
-
+        mapObjectManager.removeAll()
         mapObjectManager.addObjects(objects.toList());
 
     }
