@@ -81,4 +81,5 @@ class CustomLocationManager(private val applicationContext: Context): LocationSo
         applicationContext,
         Manifest.permission.ACCESS_COARSE_LOCATION
     ) != PackageManager.PERMISSION_GRANTED
+
 }

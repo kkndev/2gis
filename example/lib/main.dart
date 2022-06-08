@@ -55,6 +55,7 @@ class _GisScreenState extends State<GisScreen> {
                       icon: value[0],
                       latitude: 52.29778,
                       longitude: 104.29639,
+                      zIndex: 0,
                       id: "123456")
                 ]);
     super.initState();

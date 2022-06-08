@@ -28,7 +28,7 @@ class GisMapController {
   }
 
   Future<void> setCameraPosition(
-      {required GisCameraPosition position, int? duration}) async {
+      {required GisCameraPosition position, double? duration}) async {
     try {
       await _platform.invokeMethod('setCameraPosition',
           position.toNativeMap()..addAll({'duration': duration ?? 2}));
@@ -38,7 +38,7 @@ class GisMapController {
     }
   }
 
-  Future<void> increaseZoom({int? duration, int? size}) async {
+  Future<void> increaseZoom({double? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
       await _platform.invokeMethod(
@@ -51,7 +51,7 @@ class GisMapController {
     }
   }
 
-  Future<void> reduceZoom({int? duration, int? size}) async {
+  Future<void> reduceZoom({double? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
       await _platform.invokeMethod(

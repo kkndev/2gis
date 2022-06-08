@@ -34,7 +34,7 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
         gisView.getMapAsync { map ->
             map.camera.move(
                 cameraPosition,
-                Duration.ofSeconds((args["duration"] as Int).toLong()),
+                Duration.ofSeconds((args["duration"] as Double).toLong()),
                 CameraAnimationType.LINEAR
             )
                 .onResult {
@@ -70,9 +70,10 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
                 MarkerOptions(
                     position = GeoPointWithElevation(
                         latitude = i["latitude"] as Double,
-                        longitude = i["longitude"] as Double
+                        longitude = i["longitude"] as Double,
                     ),
                     icon = icon,
+                    zIndex = ZIndex(i["zIndex"] as Int),
                     userData = i["id"],
                 )
             )

@@ -17,6 +17,7 @@ import ru.dgis.sdk.map.*
 import ru.dgis.sdk.positioning.registerPlatformMagneticSource
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import ru.dgis.sdk.positioning.LocationChangeListener
 import ru.dgis.sdk.positioning.registerPlatformLocationSource
 
 internal class NativeView(

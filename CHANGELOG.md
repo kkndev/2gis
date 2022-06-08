@@ -1,3 +1,3 @@
-## 0.0.11
+## 0.0.12
 
-controller add method updateMarkers
+zIndex for mapObject, duration animation as Double
