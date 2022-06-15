@@ -121,6 +121,9 @@ internal class NativeView(
                 val args = call.arguments
                 controller.updateMarkers(arguments = args)
             }
+            "setRoute" -> {
+                controller.setRoute(arguments = call.arguments)
+            }
         }
     }
 

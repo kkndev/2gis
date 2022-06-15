@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dgis_flutter/model/gis_camera_position.dart';
 import 'package:dgis_flutter/model/gis_map_object.dart';
@@ -75,8 +76,15 @@ class GisMapController {
       await _platform.invokeMethod('updateMarkers',
           {"markers": markers.map((e) => e.toJson()).toList()});
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print('Platform exeption updateMarkers() message: $e');
+      log('Platform exeption updateMarkers() message: $e');
+    }
+  }
+
+  Future<void> setRoute(RoutePosition position)async{
+    try{
+      await _platform.invokeMethod('setRoute', position.toJson());
+    } on PlatformException catch(e){
+      log('Platform exeption setRoute() message: $e');
     }
   }
 }

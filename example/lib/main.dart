@@ -84,7 +84,13 @@ class _GisScreenState extends State<GisScreen> {
         child: const Icon(Icons.add),
         onPressed: () async {
           // await controller.increaseZoom(duration: 0);
-          await controller.updateMarkers(list);
+          // await controller.updateMarkers(list);
+          await controller.setRoute(RoutePosition(
+              finishLatitude: 55.752425,
+              finishLongitude: 37.613983,
+              startLatitude: 55.759909,
+              startLongitude: 37.618806
+          ));
         },
       ),
       body: Center(

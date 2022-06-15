@@ -12,6 +12,7 @@ import ru.dgis.sdk.coordinates.Latitude
 import ru.dgis.sdk.coordinates.Longitude
 import ru.dgis.sdk.geometry.GeoPointWithElevation
 import ru.dgis.sdk.map.*
+import ru.dgis.sdk.routing.*
 import java.io.ByteArrayInputStream
 
 class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
@@ -83,4 +84,33 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
         mapObjectManager.addObjects(objects.toList());
 
     }
+
+    fun setRoute(arguments: Any) {
+        val routeEditor = RouteEditor(sdkContext)
+        val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
+        gisView.getMapAsync { map ->
+            map.addSource(routeEditorSource)
+        }
+        arguments as Map<String, Any>
+        val startPoint = RouteSearchPoint(
+            coordinates = GeoPoint(
+                latitude = arguments["startLatitude"] as Double,
+                longitude = arguments["startLongitude"] as Double
+            )
+        )
+        val finishPoint = RouteSearchPoint(
+            coordinates = GeoPoint(
+                latitude = arguments["finishLatitude"] as Double,
+                longitude = arguments["finishLongitude"] as Double
+            )
+        )
+        routeEditor.setRouteParams(
+            RouteEditorRouteParams(
+                startPoint = startPoint,
+                finishPoint = finishPoint,
+                routeSearchOptions = RouteSearchOptions(CarRouteSearchOptions())
+            )
+        )
+    }
 }
+
