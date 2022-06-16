@@ -15,11 +15,13 @@ import ru.dgis.sdk.map.*
 import ru.dgis.sdk.routing.*
 import java.io.ByteArrayInputStream
 
-class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
+class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager, routeEditor :RouteEditor) {
 
     private var gisView = gv
     private var sdkContext = ctx
     private var mapObjectManager = mom
+    private var routeEditor = routeEditor
+
 
     fun setCameraPosition(call: MethodCall) {
         val args: Map<String, Any?> = call.arguments as Map<String, Any?>
@@ -86,12 +88,8 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
     }
 
     fun setRoute(arguments: Any) {
-        val routeEditor = RouteEditor(sdkContext)
-        val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
-        gisView.getMapAsync { map ->
-            map.addSource(routeEditorSource)
-        }
         arguments as Map<String, Any>
+        val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
         val startPoint = RouteSearchPoint(
             coordinates = GeoPoint(
                 latitude = arguments["startLatitude"] as Double,
@@ -111,6 +109,26 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager) {
                 routeSearchOptions = RouteSearchOptions(CarRouteSearchOptions())
             )
         )
+        gisView.getMapAsync { map ->
+            for(s in map.sources){
+                if(s is RouteEditorSource){
+                    map.removeSource(s)
+                }
+            }
+            map.addSource(routeEditorSource)
+        }
     }
+
+    fun removeRoute(){
+        gisView.getMapAsync { map ->
+            for(s in map.sources){
+                if(s is RouteEditorSource){
+                    map.removeSource(s)
+                }
+            }
+        }
+    }
+
+
 }
 

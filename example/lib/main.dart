@@ -80,18 +80,38 @@ class _GisScreenState extends State<GisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () async {
-          // await controller.increaseZoom(duration: 0);
-          // await controller.updateMarkers(list);
-          await controller.setRoute(RoutePosition(
-              finishLatitude: 55.752425,
-              finishLongitude: 37.613983,
-              startLatitude: 55.759909,
-              startLongitude: 37.618806
-          ));
-        },
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            child: const Icon(Icons.zoom_in_outlined),
+            onPressed: () async {
+              await controller.increaseZoom(duration: 0);
+            },
+          ),
+          FloatingActionButton(
+            child: const Icon(Icons.zoom_out_outlined),
+            onPressed: () async {
+              await controller.reduceZoom(duration: 0);
+            },
+          ),
+          FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () async {
+              controller.setRoute(RoutePosition(
+                  finishLatitude: 55.752425,
+                  finishLongitude: 37.613983,
+                  startLatitude: 55.759909,
+                  startLongitude: 37.618806));
+            },
+          ),
+          FloatingActionButton(
+            child: const Icon(Icons.remove),
+            onPressed: () async {
+              controller.removeRoute();
+            },
+          ),
+        ],
       ),
       body: Center(
           child: FutureBuilder<List<GisMapMarker>>(

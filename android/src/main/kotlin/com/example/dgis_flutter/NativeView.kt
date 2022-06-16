@@ -17,8 +17,10 @@ import ru.dgis.sdk.map.*
 import ru.dgis.sdk.positioning.registerPlatformMagneticSource
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import ru.dgis.sdk.navigation.NavigationManager
 import ru.dgis.sdk.positioning.LocationChangeListener
 import ru.dgis.sdk.positioning.registerPlatformLocationSource
+import ru.dgis.sdk.routing.RouteEditor
 
 internal class NativeView(
     context: Context,
@@ -73,9 +75,10 @@ internal class NativeView(
 
         gisView = GisMapSession.getMapView() ?: MapView(context, mapOptions)
         GisMapSession.setMapView(gisView)
+        val routeEditor = RouteEditor(sdkContext)
         gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
-            controller = GisMapController(gisView, sdkContext, mapObjectManager)
+            controller = GisMapController(gisView, sdkContext, mapObjectManager, routeEditor)
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
                     map.getRenderedObjects(point, ScreenDistance(1f))
@@ -105,6 +108,8 @@ internal class NativeView(
                 createSmoothMyLocationController()
             )
             map.addSource(source)
+            val navigationManager = NavigationManager(sdkContext)
+            navigationManager.start()
         }
     }
 
@@ -123,6 +128,9 @@ internal class NativeView(
             }
             "setRoute" -> {
                 controller.setRoute(arguments = call.arguments)
+            }
+            "removeRoute" -> {
+                controller.removeRoute()
             }
         }
     }

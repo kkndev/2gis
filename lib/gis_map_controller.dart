@@ -87,4 +87,12 @@ class GisMapController {
       log('Platform exeption setRoute() message: $e');
     }
   }
+
+  Future<void> removeRoute() async {
+    try {
+      await _platform.invokeMethod('removeRoute');
+    } on PlatformException catch (e){
+      log('Platform exeption removeRoute() message: $e');
+    }
+  }
 }

@@ -1,3 +1,11 @@
+## 0.0.16
+fix remove route
+
+
+## 0.0.15 
+
+removeRoute()
+
 ## 0.0.13
 gis map full sdk, and setRoute
 
