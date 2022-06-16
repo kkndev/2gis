@@ -32,7 +32,7 @@ internal class NativeView(
     private var methodChannel: MethodChannel;
     private lateinit var mapObjectManager: MapObjectManager;
     private var gisView: MapView
-    private lateinit var controller : GisMapController
+    private var controller : GisMapController
 
 
     private var sdkContext: ru.dgis.sdk.Context = DGis.initialize(
@@ -76,9 +76,9 @@ internal class NativeView(
         gisView = GisMapSession.getMapView() ?: MapView(context, mapOptions)
         GisMapSession.setMapView(gisView)
         val routeEditor = RouteEditor(sdkContext)
+        controller = GisMapController(gisView, sdkContext, mapObjectManager, routeEditor)
         gisView.getMapAsync { map ->
             mapObjectManager = MapObjectManager(map)
-            controller = GisMapController(gisView, sdkContext, mapObjectManager, routeEditor)
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
                     map.getRenderedObjects(point, ScreenDistance(1f))

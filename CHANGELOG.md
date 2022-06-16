@@ -1,3 +1,8 @@
+
+## 0.0.18
+
+fix init map controller
+
 ## 0.0.16
 fix remove route
 
