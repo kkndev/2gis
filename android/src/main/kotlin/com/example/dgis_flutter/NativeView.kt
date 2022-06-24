@@ -18,9 +18,8 @@ import ru.dgis.sdk.positioning.registerPlatformMagneticSource
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import ru.dgis.sdk.navigation.NavigationManager
-import ru.dgis.sdk.positioning.LocationChangeListener
 import ru.dgis.sdk.positioning.registerPlatformLocationSource
-import ru.dgis.sdk.routing.RouteEditor
+import ru.dgis.sdk.routing.*
 
 internal class NativeView(
     context: Context,
@@ -29,10 +28,11 @@ internal class NativeView(
     messenger: BinaryMessenger
 ) :
     PlatformView, MethodChannel.MethodCallHandler {
-    private var methodChannel: MethodChannel;
-    private lateinit var mapObjectManager: MapObjectManager;
+    private var methodChannel: MethodChannel
+    private var mapObjectManager: MapObjectManager? = null
     private var gisView: MapView
-    private var controller : GisMapController
+    private var controller: GisMapController
+    private var routeEditor: RouteEditor
 
 
     private var sdkContext: ru.dgis.sdk.Context = DGis.initialize(
@@ -56,6 +56,11 @@ internal class NativeView(
         setupPermissions(context)
 
         // Инициализация камеры.
+//        val mapOptions = MapOptions().apply {
+//            styleFile = null
+//            styleFile = ru.dgis.sdk.File("/com/example/dgis_flutter/style_custom.2gis")
+//            setTheme("custom")
+//        }
         val mapOptions = MapOptions()
         val startPoint = GeoPoint(
             latitude = Latitude(creationParams?.get("latitude") as Double),
@@ -65,20 +70,25 @@ internal class NativeView(
             point = startPoint,
             zoom = Zoom((creationParams["zoom"] as Double).toFloat()),
             tilt = Tilt((creationParams["tilt"] as Double).toFloat()),
-            bearing = Bearing((creationParams["bearing"] as Double))
+            bearing = Bearing((creationParams["bearing"] as Double)),
         )
 
         // Создаем канал для общения..
         methodChannel = MethodChannel(messenger, "fgis")
         methodChannel.setMethodCallHandler(this)
-
-
         gisView = GisMapSession.getMapView() ?: MapView(context, mapOptions)
         GisMapSession.setMapView(gisView)
-        val routeEditor = RouteEditor(sdkContext)
-        controller = GisMapController(gisView, sdkContext, mapObjectManager, routeEditor)
+        routeEditor = RouteEditor(sdkContext)
+        controller = GisMapController(gisView, sdkContext)
         gisView.getMapAsync { map ->
-            mapObjectManager = MapObjectManager(map)
+            val minMaxZoom = CameraZoomRestrictions(
+                minZoom = Zoom(value = 3.0f),
+                maxZoom = Zoom(value = 20.0f)
+            )
+            map.camera.zoomRestrictions = minMaxZoom
+            if (mapObjectManager == null) {
+                mapObjectManager = MapObjectManager(map)
+            }
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
                     map.getRenderedObjects(point, ScreenDistance(1f))
@@ -104,7 +114,7 @@ internal class NativeView(
             })
             val source = MyLocationMapObjectSource(
                 sdkContext,
-                MyLocationDirectionBehaviour.FOLLOW_MAGNETIC_HEADING,
+                MyLocationDirectionBehaviour.FOLLOW_SATELLITE_HEADING,
                 createSmoothMyLocationController()
             )
             map.addSource(source)
@@ -124,18 +134,31 @@ internal class NativeView(
             }
             "updateMarkers" -> {
                 val args = call.arguments
-                controller.updateMarkers(arguments = args)
+                if (mapObjectManager == null) {
+                    gisView.getMapAsync { map ->
+                        mapObjectManager = MapObjectManager(map)
+                        controller.updateMarkers(
+                            arguments = args,
+                            mapObjectManager = mapObjectManager!!
+                        )
+                    }
+                } else {
+                    controller.updateMarkers(
+                        arguments = args,
+                        mapObjectManager = mapObjectManager!!
+                    )
+                }
             }
             "setRoute" -> {
-                controller.setRoute(arguments = call.arguments)
+                setRoute(arguments = call.arguments)
             }
             "removeRoute" -> {
-                controller.removeRoute()
+                removeRoute()
             }
         }
     }
 
-    private fun registerServices(applicationContext : Context) {
+    private fun registerServices(applicationContext: Context) {
         val compassSource = CustomCompassManager(applicationContext)
         registerPlatformMagneticSource(sdkContext, compassSource)
 
@@ -152,6 +175,52 @@ internal class NativeView(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun setRoute(arguments: Any) {
+        arguments as Map<String, Any>
+        val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
+        val startPoint = RouteSearchPoint(
+            coordinates = GeoPoint(
+                latitude = arguments["startLatitude"] as Double,
+                longitude = arguments["startLongitude"] as Double
+            )
+        )
+        val finishPoint = RouteSearchPoint(
+            coordinates = GeoPoint(
+                latitude = arguments["finishLatitude"] as Double,
+                longitude = arguments["finishLongitude"] as Double
+            )
+        )
+        routeEditor.setRouteParams(
+            RouteEditorRouteParams(
+                startPoint = startPoint,
+                finishPoint = finishPoint,
+                routeSearchOptions = RouteSearchOptions(
+                    CarRouteSearchOptions(
+
+                    )
+                )
+            )
+        )
+        gisView.getMapAsync { map ->
+            for (s in map.sources) {
+                if (s is RouteEditorSource) {
+                    map.removeSource(s)
+                }
+            }
+            map.addSource(routeEditorSource)
+        }
+    }
+
+    private fun removeRoute() {
+        gisView.getMapAsync { map ->
+            for (s in map.sources) {
+                if (s is RouteEditorSource) {
+                    map.removeSource(s)
+                }
+            }
+        }
     }
 
 }

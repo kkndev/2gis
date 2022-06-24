@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 class GisMapController {
   GisMapController();
+
   List<GisMapMarker> listMarker = [];
   final _platform = const MethodChannel('fgis');
 
@@ -59,9 +60,7 @@ class GisMapController {
           'setCameraPosition',
           position
               .copyWith(
-                  zoom: position.zoom < (size ?? 1)
-                      ? 0
-                      : position.zoom - (size ?? 1))
+                  zoom: position.zoom - (size ?? 1) < 0 ? 3.0 : position.zoom - (size ?? 1))
               .toNativeMap()
             ..addAll({'duration': duration ?? 2}));
     } on PlatformException catch (e) {
@@ -80,10 +79,10 @@ class GisMapController {
     }
   }
 
-  Future<void> setRoute(RoutePosition position)async{
-    try{
+  Future<void> setRoute(RoutePosition position) async {
+    try {
       await _platform.invokeMethod('setRoute', position.toJson());
-    } on PlatformException catch(e){
+    } on PlatformException catch (e) {
       log('Platform exeption setRoute() message: $e');
     }
   }
@@ -91,7 +90,7 @@ class GisMapController {
   Future<void> removeRoute() async {
     try {
       await _platform.invokeMethod('removeRoute');
-    } on PlatformException catch (e){
+    } on PlatformException catch (e) {
       log('Platform exeption removeRoute() message: $e');
     }
   }

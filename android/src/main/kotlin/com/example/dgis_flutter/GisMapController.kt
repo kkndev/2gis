@@ -15,12 +15,10 @@ import ru.dgis.sdk.map.*
 import ru.dgis.sdk.routing.*
 import java.io.ByteArrayInputStream
 
-class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager, routeEditor :RouteEditor) {
+class GisMapController(gv: MapView, ctx: Context) {
 
     private var gisView = gv
     private var sdkContext = ctx
-    private var mapObjectManager = mom
-    private var routeEditor = routeEditor
 
 
     fun setCameraPosition(call: MethodCall) {
@@ -61,7 +59,7 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager, routeEd
         }
     }
 
-    fun updateMarkers(arguments: Any) {
+    fun updateMarkers(arguments: Any, mapObjectManager : MapObjectManager) {
         val args = arguments as Map<String, Any>;
         val markers = args["markers"] as List<Map<String, Any>>
         val objects: MutableList<SimpleMapObject> = ArrayList();
@@ -86,49 +84,5 @@ class GisMapController(gv: MapView, ctx: Context, mom: MapObjectManager, routeEd
         mapObjectManager.addObjects(objects.toList());
 
     }
-
-    fun setRoute(arguments: Any) {
-        arguments as Map<String, Any>
-        val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
-        val startPoint = RouteSearchPoint(
-            coordinates = GeoPoint(
-                latitude = arguments["startLatitude"] as Double,
-                longitude = arguments["startLongitude"] as Double
-            )
-        )
-        val finishPoint = RouteSearchPoint(
-            coordinates = GeoPoint(
-                latitude = arguments["finishLatitude"] as Double,
-                longitude = arguments["finishLongitude"] as Double
-            )
-        )
-        routeEditor.setRouteParams(
-            RouteEditorRouteParams(
-                startPoint = startPoint,
-                finishPoint = finishPoint,
-                routeSearchOptions = RouteSearchOptions(CarRouteSearchOptions())
-            )
-        )
-        gisView.getMapAsync { map ->
-            for(s in map.sources){
-                if(s is RouteEditorSource){
-                    map.removeSource(s)
-                }
-            }
-            map.addSource(routeEditorSource)
-        }
-    }
-
-    fun removeRoute(){
-        gisView.getMapAsync { map ->
-            for(s in map.sources){
-                if(s is RouteEditorSource){
-                    map.removeSource(s)
-                }
-            }
-        }
-    }
-
-
 }
 

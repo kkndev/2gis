@@ -122,6 +122,7 @@ class _GisScreenState extends State<GisScreen> {
           return GisMap(
             directoryKey: '',
             mapKey: '',
+            typeView: TypeView.platformView,
             controller: controller,
             onTapMarker: (marker) {
               // ignore: avoid_print

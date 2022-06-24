@@ -7,12 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
+enum TypeView { androidView, platformView }
+
 class GisMap extends StatefulWidget {
   final String directoryKey;
   final String mapKey;
   final GisCameraPosition startCameraPosition;
   final GisMapController controller;
   final Function(GisMapMarker) onTapMarker;
+  final TypeView typeView;
 
   const GisMap(
       {Key? key,
@@ -20,6 +23,7 @@ class GisMap extends StatefulWidget {
       required this.directoryKey,
       required this.startCameraPosition,
       required this.controller,
+      this.typeView = TypeView.platformView,
       required this.onTapMarker})
       : super(key: key);
 
@@ -42,8 +46,7 @@ class _GisMapState extends State<GisMap> {
       case 'ontap_marker':
         String id = call.arguments['id'];
         final list = widget.controller.listMarker;
-        widget.onTapMarker(list.firstWhere((element) =>
-            element.id == id));
+        widget.onTapMarker(list.firstWhere((element) => element.id == id));
         break;
       default:
         throw MissingPluginException();
@@ -64,30 +67,38 @@ class _GisMapState extends State<GisMap> {
       'tilt': widget.startCameraPosition.tilt,
       'bearing': widget.startCameraPosition.bearing,
     };
-
-    return PlatformViewLink(
-      viewType: viewType,
-      surfaceFactory: (context, controller) {
-        return AndroidViewSurface(
-          controller: controller as AndroidViewController,
-          gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-          hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-        );
-      },
-      onCreatePlatformView: (params) {
-        return PlatformViewsService.initSurfaceAndroidView(
-          id: params.id,
-          viewType: viewType,
-          layoutDirection: TextDirection.ltr,
-          creationParams: creationParams,
-          creationParamsCodec: const StandardMessageCodec(),
-          onFocus: () {
-            params.onFocusChanged(true);
-          },
-        )
-          ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-          ..create();
-      },
-    );
+    if (widget.typeView == TypeView.androidView) {
+      return AndroidView(
+        viewType: viewType,
+        layoutDirection: TextDirection.ltr,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    } else {
+      return PlatformViewLink(
+        viewType: viewType,
+        surfaceFactory: (context, controller) {
+          return AndroidViewSurface(
+            controller: controller as AndroidViewController,
+            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          );
+        },
+        onCreatePlatformView: (params) {
+          return PlatformViewsService.initSurfaceAndroidView(
+            id: params.id,
+            viewType: viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: () {
+              params.onFocusChanged(true);
+            },
+          )
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..create();
+        },
+      );
+    }
   }
 }

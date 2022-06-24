@@ -1,3 +1,16 @@
+## 0.0.25
+
+use AndroidView and PlatformView settings
+
+
+## 0.0.24
+
+fix minZoom camera
+
+## 0.0.23 
+
+fix geolocation
+
 
 ## 0.0.18
 
