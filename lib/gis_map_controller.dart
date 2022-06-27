@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:dgis_flutter/model/gis_camera_position.dart';
 import 'package:dgis_flutter/model/gis_map_object.dart';
 import 'package:flutter/services.dart';
+import 'model/gis_point.dart';
 
 class GisMapController {
   GisMapController();
@@ -92,6 +93,28 @@ class GisMapController {
       await _platform.invokeMethod('removeRoute');
     } on PlatformException catch (e) {
       log('Platform exeption removeRoute() message: $e');
+    }
+  }
+
+  Future<String> setPolyline(List<GisPoint> points) async {
+    try{
+      String status = await _platform.invokeMethod('setPolyline', {
+        'points' : points.map((e) => e.toNativeMap()).toList()
+      });
+      return status;
+    }on PlatformException catch(e){
+      log('Platform exeption setPolyline() message: $e');
+      return 'ERROR';
+    }
+  }
+
+  Future<String> removePolyline() async {
+    try{
+      String status = await _platform.invokeMethod('removePolyline');
+      return status;
+    }on PlatformException catch(e){
+      log('Platform exeption removePolyline() message: $e');
+      return 'ERROR';
     }
   }
 }

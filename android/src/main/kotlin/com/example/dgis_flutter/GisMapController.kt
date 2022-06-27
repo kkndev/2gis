@@ -19,6 +19,8 @@ class GisMapController(gv: MapView, ctx: Context) {
 
     private var gisView = gv
     private var sdkContext = ctx
+    private var listIconObjects :  List<SimpleMapObject>? = null
+    private var polylineObject :  SimpleMapObject? = null
 
 
     fun setCameraPosition(call: MethodCall) {
@@ -80,9 +82,47 @@ class GisMapController(gv: MapView, ctx: Context) {
             )
             objects.add(marker)
         }
-        mapObjectManager.removeAll()
+        if(listIconObjects != null){
+            mapObjectManager.removeObjects(listIconObjects!!)
+        }
         mapObjectManager.addObjects(objects.toList());
+        listIconObjects = objects.toList()
 
+    }
+
+    fun setPolyline(arguments: Any, mapObjectManager: MapObjectManager, result: MethodChannel.Result){
+        val args = arguments as Map<String, Any>
+        val p = args["points"] as List<Map<String, Any>>
+        val points: MutableList<GeoPoint> = mutableListOf()
+        for (element in p) {
+            points.add(
+                GeoPoint(
+                    latitude = (element["latitude"] as Double),
+                    longitude = (element["longitude"] as Double),
+                )
+            )
+        }
+        // Создание линии
+        val polyline = Polyline(
+            PolylineOptions(
+                points = points,
+                width = 4.lpx,
+                color = Color(0, 0, 255)
+            )
+        )
+        if(polylineObject != null){
+            mapObjectManager.removeObject(polylineObject!!)
+        }
+        mapObjectManager.addObject(polyline)
+        polylineObject = polyline
+        result.success("OK")
+    }
+
+    fun removePolyline(mapObjectManager: MapObjectManager, result: MethodChannel.Result){
+        if(polylineObject != null){
+            mapObjectManager.removeObject(polylineObject!!)
+        }
+        result.success("OK")
     }
 }
 

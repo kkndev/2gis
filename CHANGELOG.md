@@ -1,3 +1,7 @@
+## 0.0.26
+set and remove polyline
+
+
 ## 0.0.25
 
 use AndroidView and PlatformView settings

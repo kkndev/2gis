@@ -55,12 +55,6 @@ internal class NativeView(
         registerServices(context)
         setupPermissions(context)
 
-        // Инициализация камеры.
-//        val mapOptions = MapOptions().apply {
-//            styleFile = null
-//            styleFile = ru.dgis.sdk.File("/com/example/dgis_flutter/style_custom.2gis")
-//            setTheme("custom")
-//        }
         val mapOptions = MapOptions()
         val startPoint = GeoPoint(
             latitude = Latitude(creationParams?.get("latitude") as Double),
@@ -154,6 +148,36 @@ internal class NativeView(
             }
             "removeRoute" -> {
                 removeRoute()
+            }
+            "setPolyline" -> {
+                if (mapObjectManager == null) {
+                    gisView.getMapAsync { map ->
+                        mapObjectManager = MapObjectManager(map)
+                        controller.setPolyline(
+                            arguments = call.arguments,
+                            mapObjectManager = mapObjectManager!!,
+                            result = result
+                        )
+                    }
+                } else {
+                    controller.setPolyline(
+                        arguments = call.arguments,
+                        mapObjectManager = mapObjectManager!!,
+                        result = result
+                    )
+                }
+
+            }
+            "removePolyline" -> {
+                if (mapObjectManager == null) {
+                    gisView.getMapAsync { map ->
+                        mapObjectManager = MapObjectManager(map)
+                        controller.removePolyline(mapObjectManager!!, result = result)
+                    }
+                } else {
+                    controller.removePolyline(mapObjectManager!!, result = result)
+                }
+
             }
         }
     }
