@@ -1,10 +1,7 @@
+import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:dgis_flutter/dgis_flutter.dart';
-import 'package:dgis_flutter/gis_map_controller.dart';
-import 'package:dgis_flutter/model/gis_camera_position.dart';
-import 'package:dgis_flutter/model/gis_map_object.dart';
 import 'package:dgis_flutter_example/assets_constant.dart';
 import 'package:flutter/material.dart';
 
@@ -86,29 +83,33 @@ class _GisScreenState extends State<GisScreen> {
           FloatingActionButton(
             child: const Icon(Icons.zoom_in_outlined),
             onPressed: () async {
-              await controller.increaseZoom(duration: 0);
+              final status = await controller.increaseZoom(duration: 0);
+              log(status);
             },
           ),
           FloatingActionButton(
             child: const Icon(Icons.zoom_out_outlined),
             onPressed: () async {
-              await controller.reduceZoom(duration: 0);
+              final status = await controller.reduceZoom(duration: 0);
+              log(status);
             },
           ),
           FloatingActionButton(
             child: const Icon(Icons.add),
             onPressed: () async {
-              controller.setRoute(RoutePosition(
+              final status = await controller.setRoute(RoutePosition(
                   finishLatitude: 55.752425,
                   finishLongitude: 37.613983,
                   startLatitude: 55.759909,
                   startLongitude: 37.618806));
+              log(status);
             },
           ),
           FloatingActionButton(
             child: const Icon(Icons.remove),
             onPressed: () async {
-              controller.removeRoute();
+              final status = await controller.removeRoute();
+              log(status);
             },
           ),
         ],

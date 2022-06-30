@@ -1,3 +1,7 @@
+
+## 0.0.28
+src refactor 
+
 ## 0.0.26
 set and remove polyline
 

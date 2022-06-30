@@ -124,7 +124,7 @@ internal class NativeView(
                 controller.getCameraPosition(result = result)
             }
             "setCameraPosition" -> {
-                controller.setCameraPosition(call = call)
+                controller.setCameraPosition(call = call, result = result)
             }
             "updateMarkers" -> {
                 val args = call.arguments
@@ -144,10 +144,10 @@ internal class NativeView(
                 }
             }
             "setRoute" -> {
-                setRoute(arguments = call.arguments)
+                setRoute(arguments = call.arguments, result = result)
             }
             "removeRoute" -> {
-                removeRoute()
+                removeRoute(result = result)
             }
             "setPolyline" -> {
                 if (mapObjectManager == null) {
@@ -158,6 +158,7 @@ internal class NativeView(
                             mapObjectManager = mapObjectManager!!,
                             result = result
                         )
+                        result.success("OK")
                     }
                 } else {
                     controller.setPolyline(
@@ -165,6 +166,7 @@ internal class NativeView(
                         mapObjectManager = mapObjectManager!!,
                         result = result
                     )
+                    result.success("OK")
                 }
 
             }
@@ -201,7 +203,7 @@ internal class NativeView(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun setRoute(arguments: Any) {
+    private fun setRoute(arguments: Any, result: MethodChannel.Result) {
         arguments as Map<String, Any>
         val routeEditorSource = RouteEditorSource(sdkContext, routeEditor)
         val startPoint = RouteSearchPoint(
@@ -234,16 +236,18 @@ internal class NativeView(
                 }
             }
             map.addSource(routeEditorSource)
+            result.success("OK")
         }
     }
 
-    private fun removeRoute() {
+    private fun removeRoute(result: MethodChannel.Result) {
         gisView.getMapAsync { map ->
             for (s in map.sources) {
                 if (s is RouteEditorSource) {
                     map.removeSource(s)
                 }
             }
+            result.success("OK")
         }
     }
 

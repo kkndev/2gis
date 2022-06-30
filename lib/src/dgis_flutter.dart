@@ -1,6 +1,4 @@
-import 'package:dgis_flutter/gis_map_controller.dart';
-import 'package:dgis_flutter/model/gis_camera_position.dart';
-import 'package:dgis_flutter/model/gis_map_object.dart';
+import 'package:dgis_flutter/dgis_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:dgis_flutter/model/gis_camera_position.dart';
-import 'package:dgis_flutter/model/gis_map_object.dart';
+import 'package:dgis_flutter/dgis_flutter.dart';
 import 'package:flutter/services.dart';
-import 'model/gis_point.dart';
 
 class GisMapController {
   GisMapController();

@@ -23,7 +23,7 @@ class GisMapController(gv: MapView, ctx: Context) {
     private var polylineObject :  SimpleMapObject? = null
 
 
-    fun setCameraPosition(call: MethodCall) {
+    fun setCameraPosition(call: MethodCall, result: MethodChannel.Result) {
         val args: Map<String, Any?> = call.arguments as Map<String, Any?>
         val cameraPosition = CameraPosition(
             GeoPoint(
@@ -42,6 +42,7 @@ class GisMapController(gv: MapView, ctx: Context) {
             )
                 .onResult {
                     Log.d("APP", "Перелёт камеры завершён.")
+                    result.success("OK")
                 }
         }
     }
