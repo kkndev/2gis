@@ -30,43 +30,50 @@ class GisMapController {
     return const GisCameraPosition(latitude: 0.0, longitude: 0.0);
   }
 
-  Future<void> setCameraPosition(
+  Future<String> setCameraPosition(
       {required GisCameraPosition position, double? duration}) async {
     try {
-      await _platform.invokeMethod('setCameraPosition',
+      final String status = await _platform.invokeMethod('setCameraPosition',
           position.toNativeMap()..addAll({'duration': duration ?? 2}));
+      return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
       print('Platform exeption setCameraPosition() message: $e');
+      return "ERROR";
     }
   }
 
-  Future<void> increaseZoom({double? duration, int? size}) async {
+
+  Future<String> increaseZoom({double? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
-      await _platform.invokeMethod(
+      final String status = await _platform.invokeMethod(
           'setCameraPosition',
           position.copyWith(zoom: position.zoom + (size ?? 1)).toNativeMap()
             ..addAll({'duration': duration ?? 2}));
+      return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
       print('Platform exeption setCameraPosition() message: $e');
+      return "ERROR";
     }
   }
 
-  Future<void> reduceZoom({double? duration, int? size}) async {
+  Future<String> reduceZoom({double? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
-      await _platform.invokeMethod(
+      final String status = await _platform.invokeMethod(
           'setCameraPosition',
           position
               .copyWith(
                   zoom: position.zoom - (size ?? 1) < 0 ? 3.0 : position.zoom - (size ?? 1))
               .toNativeMap()
             ..addAll({'duration': duration ?? 2}));
+      return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
       print('Platform exeption setCameraPosition() message: $e');
+      return "ERROR";
     }
   }
 
@@ -80,19 +87,23 @@ class GisMapController {
     }
   }
 
-  Future<void> setRoute(RoutePosition position) async {
+  Future<String> setRoute(RoutePosition position) async {
     try {
-      await _platform.invokeMethod('setRoute', position.toJson());
+      final String status = await _platform.invokeMethod('setRoute', position.toJson());
+      return status;
     } on PlatformException catch (e) {
       log('Platform exeption setRoute() message: $e');
+      return "ERROR";
     }
   }
 
-  Future<void> removeRoute() async {
+  Future<String> removeRoute() async {
     try {
-      await _platform.invokeMethod('removeRoute');
+      final String status = await _platform.invokeMethod('removeRoute');
+      return status;
     } on PlatformException catch (e) {
       log('Platform exeption removeRoute() message: $e');
+      return "ERROR";
     }
   }
 
