@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
-enum TypeView { androidView, platformView }
+enum TypeView { virtualDisplay, hybridComposition }
 
 class GisMap extends StatefulWidget {
   final String directoryKey;
@@ -21,7 +21,7 @@ class GisMap extends StatefulWidget {
       required this.directoryKey,
       required this.startCameraPosition,
       required this.controller,
-      this.typeView = TypeView.platformView,
+      this.typeView = TypeView.hybridComposition,
       required this.onTapMarker})
       : super(key: key);
 
@@ -65,7 +65,7 @@ class _GisMapState extends State<GisMap> {
       'tilt': widget.startCameraPosition.tilt,
       'bearing': widget.startCameraPosition.bearing,
     };
-    if (widget.typeView == TypeView.androidView) {
+    if (widget.typeView == TypeView.virtualDisplay) {
       return AndroidView(
         viewType: viewType,
         layoutDirection: TextDirection.ltr,

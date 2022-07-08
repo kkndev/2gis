@@ -4,12 +4,23 @@ Plugin sdk 2gis
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+Для запуска карты вам нужны ключи
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Ключ для MapGL JS API и Android NativeSDK (mapKey)
+
+Ключ для truck-directions
+
+Любые манипуляции с картой осуществляются через GisMapController
+контроллер пока ни как не привязан к карте, и может быть создан
+в любое время, все что он делает это отправляет сообщения в нативный sdk.
+
+Существует 2 типа PlatformView, описание смотреть здесь https://docs.flutter.dev/development/platform-integration/android/platform-views
+
+В GisMap widget вы можете выбрать hybridComposition - что является гибридной композицией
+и установлена по умолчанию.
+
+Можно так же запустить в виде виртуального дисплея virtualDisplay
+(Работает на много стабильнее на свежем flutter)
+пока нет свежих обновлений рекомендую использовать
+именно виртуальный дисплей.
 

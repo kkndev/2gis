@@ -121,9 +121,9 @@ class _GisScreenState extends State<GisScreen> {
           if (!snapshot.hasData) return const SizedBox();
           list = snapshot.data!;
           return GisMap(
-            directoryKey: '',
-            mapKey: '',
-            typeView: TypeView.platformView,
+            directoryKey: 'rubyqf9316',
+            mapKey: 'b7272230-6bc3-47e9-b24b-0eba73b12fe1',
+            typeView: TypeView.virtualDisplay,
             controller: controller,
             onTapMarker: (marker) {
               // ignore: avoid_print
