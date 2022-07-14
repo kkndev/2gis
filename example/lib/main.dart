@@ -45,16 +45,8 @@ class _GisScreenState extends State<GisScreen> {
 
   @override
   void initState() {
-    icons =
-        Future.wait([getPngFromAsset(context, AssetPath.iconsPointGrey, 60)])
-            .then((value) => [
-                  GisMapMarker(
-                      icon: value[0],
-                      latitude: 52.29778,
-                      longitude: 104.29639,
-                      zIndex: 0,
-                      id: "123456")
-                ]);
+    icons = Future.wait([getPngFromAsset(context, AssetPath.iconsPointGrey, 60)]).then(
+        (value) => [GisMapMarker(icon: value[0], latitude: 52.29778, longitude: 104.29639, zIndex: 0, id: "123456")]);
     super.initState();
   }
 
@@ -69,76 +61,105 @@ class _GisScreenState extends State<GisScreen> {
       targetWidth: width,
     );
     FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
+    return (await fi.image.toByteData(format: ImageByteFormat.png))!.buffer.asUint8List();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            child: const Icon(Icons.zoom_in_outlined),
-            onPressed: () async {
-              final status = await controller.increaseZoom(duration: 200);
-              log(status);
-            },
-          ),
-          FloatingActionButton(
-            child: const Icon(Icons.zoom_out_outlined),
-            onPressed: () async {
-              final status = await controller.reduceZoom(duration: 200);
-              log(status);
-            },
-          ),
-          FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () async {
-              final status = await controller.setRoute(RoutePosition(
-                  finishLatitude: 55.752425,
-                  finishLongitude: 37.613983,
-                  startLatitude: 55.759909,
-                  startLongitude: 37.618806));
-              log(status);
-            },
-          ),
-          FloatingActionButton(
-            child: const Icon(Icons.remove),
-            onPressed: () async {
-              final status = await controller.removeRoute();
-              log(status);
-            },
-          ),
-        ],
-      ),
-      body: Center(
+      body: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: ButtonMapWidget(
+          controller: controller,
           child: FutureBuilder<List<GisMapMarker>>(
-        future: icons,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const SizedBox();
-          list = snapshot.data!;
-          return GisMap(
-            directoryKey: 'rubyqf9316',
-            mapKey: 'b7272230-6bc3-47e9-b24b-0eba73b12fe1',
-            typeView: TypeView.virtualDisplay,
-            controller: controller,
-            onTapMarker: (marker) {
-              // ignore: avoid_print
-              print(marker.id);
+            future: icons,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              list = snapshot.data!;
+              return GisMap(
+                directoryKey: 'rubyqf9316',
+                mapKey: 'b7272230-6bc3-47e9-b24b-0eba73b12fe1',
+                useHybridComposition: true,
+                controller: controller,
+                onTapMarker: (marker) {
+                  // ignore: avoid_print
+                  print(marker.id);
+                },
+                startCameraPosition: const GisCameraPosition(
+                  latitude: 52.29778,
+                  longitude: 104.29639,
+                  bearing: 85.0,
+                  tilt: 25.0,
+                  zoom: 14.0,
+                ),
+              );
             },
-            startCameraPosition: const GisCameraPosition(
-              latitude: 52.29778,
-              longitude: 104.29639,
-              bearing: 85.0,
-              tilt: 25.0,
-              zoom: 14.0,
-            ),
-          );
-        },
-      )),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ButtonMapWidget extends StatelessWidget {
+  final Widget child;
+  final GisMapController controller;
+
+  const ButtonMapWidget({Key? key, required this.child, required this.controller}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        Align(
+            alignment: Alignment.bottomCenter,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  child: const Icon(Icons.gps_fixed),
+                  onPressed: () async {
+                    final status = await controller.setCameraPosition(latitude: 55.752425, longitude: 37.613983);
+                    log(status);
+                  },
+                ),
+                FloatingActionButton(
+                  child: const Icon(Icons.zoom_in_outlined),
+                  onPressed: () async {
+                    final status = await controller.increaseZoom(duration: 200);
+                    log(status);
+                  },
+                ),
+                FloatingActionButton(
+                  child: const Icon(Icons.zoom_out_outlined),
+                  onPressed: () async {
+                    final status = await controller.reduceZoom(duration: 200);
+                    log(status);
+                  },
+                ),
+                FloatingActionButton(
+                  child: const Icon(Icons.add),
+                  onPressed: () async {
+                    final status = await controller.setRoute(RoutePosition(
+                        finishLatitude: 55.752425,
+                        finishLongitude: 37.613983,
+                        startLatitude: 55.759909,
+                        startLongitude: 37.618806));
+                    log(status);
+                  },
+                ),
+                FloatingActionButton(
+                  child: const Icon(Icons.remove),
+                  onPressed: () async {
+                    final status = await controller.removeRoute();
+                    log(status);
+                  },
+                ),
+              ],
+            )),
+      ],
     );
   }
 }

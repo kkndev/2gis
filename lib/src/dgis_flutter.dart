@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
-enum TypeView { virtualDisplay, hybridComposition }
 
 class GisMap extends StatefulWidget {
   final String directoryKey;
@@ -13,7 +12,7 @@ class GisMap extends StatefulWidget {
   final GisCameraPosition startCameraPosition;
   final GisMapController controller;
   final Function(GisMapMarker) onTapMarker;
-  final TypeView typeView;
+  final bool? useHybridComposition;
 
   const GisMap(
       {Key? key,
@@ -21,7 +20,7 @@ class GisMap extends StatefulWidget {
       required this.directoryKey,
       required this.startCameraPosition,
       required this.controller,
-      this.typeView = TypeView.hybridComposition,
+      this.useHybridComposition = true,
       required this.onTapMarker})
       : super(key: key);
 
@@ -65,7 +64,7 @@ class _GisMapState extends State<GisMap> {
       'tilt': widget.startCameraPosition.tilt,
       'bearing': widget.startCameraPosition.bearing,
     };
-    if (widget.typeView == TypeView.virtualDisplay) {
+    if (!widget.useHybridComposition!) {
       return AndroidView(
         viewType: viewType,
         layoutDirection: TextDirection.ltr,
@@ -75,7 +74,7 @@ class _GisMapState extends State<GisMap> {
     } else {
       return PlatformViewLink(
         viewType: viewType,
-        surfaceFactory: (context, controller) {
+        surfaceFactory: (context, PlatformViewController controller) {
           return AndroidViewSurface(
             controller: controller as AndroidViewController,
             gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
@@ -83,7 +82,7 @@ class _GisMapState extends State<GisMap> {
           );
         },
         onCreatePlatformView: (params) {
-          return PlatformViewsService.initSurfaceAndroidView(
+          final AndroidViewController controller = PlatformViewsService.initExpensiveAndroidView(
             id: params.id,
             viewType: viewType,
             layoutDirection: TextDirection.ltr,
@@ -95,6 +94,7 @@ class _GisMapState extends State<GisMap> {
           )
             ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
             ..create();
+          return controller;
         },
       );
     }

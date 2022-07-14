@@ -28,10 +28,13 @@ class GisMapController {
   }
 
   Future<String> setCameraPosition(
-      {required GisCameraPosition position, int? duration}) async {
+      {double? latitude, double? longitude, double? zoom, double? tilt, double? bearing, int? duration}) async {
     try {
-      final String status = await _platform.invokeMethod('setCameraPosition',
-          position.toNativeMap()..addAll({'duration': duration ?? 0}));
+      final ps = await getCameraPosition();
+      final String status = await _platform.invokeMethod(
+          'setCameraPosition',
+          ps.copyWith(latitude: latitude, longitude: longitude, zoom: zoom, tilt: tilt, bearing: bearing).toNativeMap()
+            ..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -40,14 +43,11 @@ class GisMapController {
     }
   }
 
-
   Future<String> increaseZoom({int? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
-      final String status = await _platform.invokeMethod(
-          'setCameraPosition',
-          position.copyWith(zoom: position.zoom + (size ?? 1)).toNativeMap()
-            ..addAll({'duration': duration ?? 0}));
+      final String status = await _platform.invokeMethod('setCameraPosition',
+          position.copyWith(zoom: position.zoom + (size ?? 1)).toNativeMap()..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -61,10 +61,7 @@ class GisMapController {
       final position = await getCameraPosition();
       final String status = await _platform.invokeMethod(
           'setCameraPosition',
-          position
-              .copyWith(
-                  zoom: position.zoom - (size ?? 1) < 0 ? 3.0 : position.zoom - (size ?? 1))
-              .toNativeMap()
+          position.copyWith(zoom: position.zoom - (size ?? 1) < 0 ? 3.0 : position.zoom - (size ?? 1)).toNativeMap()
             ..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
@@ -77,8 +74,7 @@ class GisMapController {
   Future<void> updateMarkers(List<GisMapMarker> markers) async {
     try {
       listMarker = markers;
-      await _platform.invokeMethod('updateMarkers',
-          {"markers": markers.map((e) => e.toJson()).toList()});
+      await _platform.invokeMethod('updateMarkers', {"markers": markers.map((e) => e.toJson()).toList()});
     } on PlatformException catch (e) {
       log('Platform exeption updateMarkers() message: $e');
     }
@@ -105,22 +101,21 @@ class GisMapController {
   }
 
   Future<String> setPolyline(List<GisPoint> points) async {
-    try{
-      String status = await _platform.invokeMethod('setPolyline', {
-        'points' : points.map((e) => e.toNativeMap()).toList()
-      });
+    try {
+      String status =
+          await _platform.invokeMethod('setPolyline', {'points': points.map((e) => e.toNativeMap()).toList()});
       return status;
-    }on PlatformException catch(e){
+    } on PlatformException catch (e) {
       log('Platform exeption setPolyline() message: $e');
       return 'ERROR';
     }
   }
 
   Future<String> removePolyline() async {
-    try{
+    try {
       String status = await _platform.invokeMethod('removePolyline');
       return status;
-    }on PlatformException catch(e){
+    } on PlatformException catch (e) {
       log('Platform exeption removePolyline() message: $e');
       return 'ERROR';
     }
