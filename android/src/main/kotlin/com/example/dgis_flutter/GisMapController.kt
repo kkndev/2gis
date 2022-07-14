@@ -37,7 +37,7 @@ class GisMapController(gv: MapView, ctx: Context) {
         gisView.getMapAsync { map ->
             map.camera.move(
                 cameraPosition,
-                Duration.ofSeconds((args["duration"] as Double).toLong()),
+                Duration.ofMilliseconds((args["duration"] as Int).toLong()),
                 CameraAnimationType.LINEAR
             )
                 .onResult {
