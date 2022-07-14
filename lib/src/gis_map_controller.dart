@@ -28,10 +28,10 @@ class GisMapController {
   }
 
   Future<String> setCameraPosition(
-      {required GisCameraPosition position, double? duration}) async {
+      {required GisCameraPosition position, int? duration}) async {
     try {
       final String status = await _platform.invokeMethod('setCameraPosition',
-          position.toNativeMap()..addAll({'duration': duration ?? 2}));
+          position.toNativeMap()..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -41,13 +41,13 @@ class GisMapController {
   }
 
 
-  Future<String> increaseZoom({double? duration, int? size}) async {
+  Future<String> increaseZoom({int? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
       final String status = await _platform.invokeMethod(
           'setCameraPosition',
           position.copyWith(zoom: position.zoom + (size ?? 1)).toNativeMap()
-            ..addAll({'duration': duration ?? 2}));
+            ..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -56,7 +56,7 @@ class GisMapController {
     }
   }
 
-  Future<String> reduceZoom({double? duration, int? size}) async {
+  Future<String> reduceZoom({int? duration, int? size}) async {
     try {
       final position = await getCameraPosition();
       final String status = await _platform.invokeMethod(
@@ -65,7 +65,7 @@ class GisMapController {
               .copyWith(
                   zoom: position.zoom - (size ?? 1) < 0 ? 3.0 : position.zoom - (size ?? 1))
               .toNativeMap()
-            ..addAll({'duration': duration ?? 2}));
+            ..addAll({'duration': duration ?? 0}));
       return status;
     } on PlatformException catch (e) {
       // ignore: avoid_print

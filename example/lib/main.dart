@@ -83,14 +83,14 @@ class _GisScreenState extends State<GisScreen> {
           FloatingActionButton(
             child: const Icon(Icons.zoom_in_outlined),
             onPressed: () async {
-              final status = await controller.increaseZoom(duration: 0);
+              final status = await controller.increaseZoom(duration: 200);
               log(status);
             },
           ),
           FloatingActionButton(
             child: const Icon(Icons.zoom_out_outlined),
             onPressed: () async {
-              final status = await controller.reduceZoom(duration: 0);
+              final status = await controller.reduceZoom(duration: 200);
               log(status);
             },
           ),
