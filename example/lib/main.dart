@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 import 'dart:ui';
 import 'package:dgis_flutter/dgis_flutter.dart';
 import 'package:dgis_flutter_example/assets_constant.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'help.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,26 +45,12 @@ class _GisScreenState extends State<GisScreen> {
 
   late final Future<List<GisMapMarker>> icons;
   List<GisMapMarker> list = [];
+  int counter = 0;
 
   @override
   void initState() {
-    icons = Future.wait([getPngFromAsset(context, AssetPath.iconsPointGrey, 60)]).then(
-        (value) => [GisMapMarker(icon: value[0], latitude: 52.29778, longitude: 104.29639, zIndex: 0, id: "123456")]);
+    icons = Future.wait([]);
     super.initState();
-  }
-
-  Future<Uint8List> getPngFromAsset(
-    BuildContext context,
-    String path,
-    int width,
-  ) async {
-    ByteData data = await DefaultAssetBundle.of(context).load(path);
-    Codec codec = await instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: width,
-    );
-    FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ImageByteFormat.png))!.buffer.asUint8List();
   }
 
   @override
@@ -71,6 +60,7 @@ class _GisScreenState extends State<GisScreen> {
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
         child: ButtonMapWidget(
+          list: list,
           controller: controller,
           child: FutureBuilder<List<GisMapMarker>>(
             future: icons,
@@ -105,8 +95,36 @@ class _GisScreenState extends State<GisScreen> {
 class ButtonMapWidget extends StatelessWidget {
   final Widget child;
   final GisMapController controller;
+  final List<GisMapMarker> list;
 
-  const ButtonMapWidget({Key? key, required this.child, required this.controller}) : super(key: key);
+  const ButtonMapWidget({
+    Key? key,
+    required this.child,
+    required this.controller,
+    required this.list,
+  }) : super(key: key);
+
+  void updateIcons(context) async {
+    String data =
+        await DefaultAssetBundle.of(context).loadString("assets/data.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var icons = await Future.wait([getPngFromAsset()]);
+    var items =
+        jsonResult['action_result']['data']['parking_places'] as List<dynamic>;
+    List<GisMapMarker> items2 = [];
+    items.forEach((element) {
+      items2.add(GisMapMarker(
+          icon: icons[0],
+          latitude: double.parse(element['longitude']),
+          longitude: double.parse(element['latitude']),
+          angle: double.parse(element['angle']),
+          zIndex: 0,
+          id: element['id'].toString()));
+    });
+    print(items);
+
+    final status = await controller.updateMarkers(items2);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,42 +139,14 @@ class ButtonMapWidget extends StatelessWidget {
                 FloatingActionButton(
                   child: const Icon(Icons.gps_fixed),
                   onPressed: () async {
-                    final status = await controller.setCameraPosition(latitude: 55.752425, longitude: 37.613983);
+                    final status = await controller.setCameraPosition(
+                        latitude: 56.455114546767, longitude: 84.985119293168);
                     log(status);
                   },
                 ),
                 FloatingActionButton(
-                  child: const Icon(Icons.zoom_in_outlined),
-                  onPressed: () async {
-                    final status = await controller.increaseZoom(duration: 200);
-                    log(status);
-                  },
-                ),
-                FloatingActionButton(
-                  child: const Icon(Icons.zoom_out_outlined),
-                  onPressed: () async {
-                    final status = await controller.reduceZoom(duration: 200);
-                    log(status);
-                  },
-                ),
-                FloatingActionButton(
-                  child: const Icon(Icons.add),
-                  onPressed: () async {
-                    final status = await controller.setRoute(RoutePosition(
-                        finishLatitude: 55.752425,
-                        finishLongitude: 37.613983,
-                        startLatitude: 55.759909,
-                        startLongitude: 37.618806));
-                    log(status);
-                  },
-                ),
-                FloatingActionButton(
-                  child: const Icon(Icons.remove),
-                  onPressed: () async {
-                    final status = await controller.removeRoute();
-                    log(status);
-                  },
-                ),
+                    child: const Icon(Icons.add),
+                    onPressed: () => updateIcons(context)),
               ],
             )),
       ],

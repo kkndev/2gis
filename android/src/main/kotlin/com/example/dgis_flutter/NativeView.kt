@@ -81,7 +81,25 @@ internal class NativeView(
             )
             map.camera.zoomRestrictions = minMaxZoom
             if (mapObjectManager == null) {
-                mapObjectManager = MapObjectManager(map)
+                val clusterRenderer = object : SimpleClusterRenderer {
+                    override fun renderCluster(cluster: SimpleClusterObject): SimpleClusterOptions {
+                        val textStyle = TextStyle(
+                            color = Color(0xFFFFFFFF.toInt()),
+                            fontSize = LogicalPixel(20.0f),
+                            textPlacement = TextPlacement.CENTER_CENTER
+                        )
+                        val objectCount = cluster.objectCount
+                        return SimpleClusterOptions(
+                            icon = imageFromResource(sdkContext, R.drawable.pin),
+                            iconWidth = LogicalPixel(20.0f),
+                            text = objectCount.toString(),
+                            textStyle = textStyle,
+                            iconMapDirection = null,
+                            userData = objectCount.toString()
+                        )
+                    }
+                }
+                mapObjectManager = MapObjectManager.withClustering(map, LogicalPixel(80.0f), Zoom(18.0f), clusterRenderer)
             }
             gisView.setTouchEventsObserver(object : TouchEventsObserver {
                 override fun onTap(point: ScreenPoint) {
@@ -128,9 +146,27 @@ internal class NativeView(
             }
             "updateMarkers" -> {
                 val args = call.arguments
+                val clusterRenderer = object : SimpleClusterRenderer {
+                    override fun renderCluster(cluster: SimpleClusterObject): SimpleClusterOptions {
+                        val textStyle = TextStyle(
+                            fontSize = LogicalPixel(15.0f),
+                            textPlacement = TextPlacement.RIGHT_TOP
+                        )
+                        val objectCount = cluster.objectCount
+                        val iconMapDirection = if (objectCount < 5) MapDirection(45.0) else null
+                        return SimpleClusterOptions(
+                            icon = imageFromResource(sdkContext, R.drawable.point_grey),
+                            iconWidth = LogicalPixel(30.0f),
+                            text = objectCount.toString(),
+                            textStyle = textStyle,
+                            iconMapDirection = iconMapDirection,
+                            userData = objectCount.toString()
+                        )
+                    }
+                }
                 if (mapObjectManager == null) {
                     gisView.getMapAsync { map ->
-                        mapObjectManager = MapObjectManager(map)
+                        mapObjectManager = MapObjectManager.withClustering(map, LogicalPixel(80.0f), Zoom(18.0f), clusterRenderer)
                         controller.updateMarkers(
                             arguments = args,
                             mapObjectManager = mapObjectManager!!

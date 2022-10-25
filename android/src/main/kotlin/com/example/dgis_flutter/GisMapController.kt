@@ -77,8 +77,10 @@ class GisMapController(gv: MapView, ctx: Context) {
                         longitude = i["longitude"] as Double,
                     ),
                     icon = icon,
-                    zIndex = ZIndex(i["zIndex"] as Int),
+                    iconMapDirection= MapDirection(i["angle"] as Double),
+                            zIndex = ZIndex(i["zIndex"] as Int),
                     userData = i["id"],
+                    iconWidth = LogicalPixel(18.0f)
                 )
             )
             objects.add(marker)

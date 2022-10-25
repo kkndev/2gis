@@ -3,6 +3,7 @@ import 'dart:typed_data';
 class GisMapMarker {
   final double latitude;
   final double longitude;
+  final double angle;
   final Uint8List icon;
   final int zIndex;
   final String id;
@@ -10,6 +11,7 @@ class GisMapMarker {
   GisMapMarker(
       {required this.latitude,
       required this.longitude,
+      required this.angle,
       required this.icon,
       required this.id,
       required this.zIndex});
@@ -17,6 +19,7 @@ class GisMapMarker {
   Map<String, dynamic> toJson() => {
         'latitude': latitude,
         'longitude': longitude,
+        'angle': angle,
         'icon': icon,
         'id': id,
         'zIndex': zIndex
